@@ -29,6 +29,7 @@ bool setTime = false;
 bool startIntegral = false;
 bool stopIntegral = false;
 float finalVal = 0.0;
+float max_enc_per_sec = 19.5;
 
 enum MachineState {
   X,
@@ -69,19 +70,15 @@ void setup() {
 
 void loop() {
   if (setX == false) {
-    counter = 0;
     findX();
   }
   if (setX == true && setY == false) {
-    counter = 0;
     findY();
   }
   if (setX == true && setY == true && setTime == false) {
-    counter = 0;
     findTime();
   }
   if (setX == true && setY == true && setTime == true && startIntegral == false) {
-    counter = 0;
     int btnState = digitalRead(SW);
     display.clearDisplay();
     display.setCursor(50, 25);
@@ -100,12 +97,13 @@ void loop() {
       }
       lastButtonPress = millis();
     }
+    counter = 0;
   }
   if (startIntegral == true) {
     doIntegral();
   }
   if (startIntegral == true && stopIntegral == true) {
-    //finalVal = (finalEncoder * enc_per_sec) / b   
+    finalVal = ((x * y) * (finalEncoder)) / (max_enc_per_sec * time);
     display.clearDisplay();
     display.setCursor(50, 25);
     display.println(finalVal);
@@ -190,12 +188,6 @@ void doIntegral() {
 }
 
 void findX() {
-      display.clearDisplay();
-      display.setCursor(0, 10);
-      display.println("X: ");
-      display.println(counter);
-      display.display(); 
-
       currentStateCLK = digitalRead(CLK);
 
       // If last and current state of CLK are different, then pulse occurred
@@ -217,6 +209,12 @@ void findX() {
         Serial.print(currentDir);
         Serial.print(" | Counter: ");
         Serial.println(counter);
+
+        display.clearDisplay();
+        display.setCursor(0, 10);
+        display.println("X: ");
+        display.println(counter);
+        display.display(); 
       }
 
       // Remember last CLK state
@@ -246,12 +244,6 @@ void findX() {
 }
 
 void findY() {
-      display.clearDisplay();
-      display.setCursor(0, 10);
-      display.println("y: ");
-      display.println(counter);
-      display.display(); 
-
       currentStateCLK = digitalRead(CLK);
 
       // If last and current state of CLK are different, then pulse occurred
@@ -273,6 +265,12 @@ void findY() {
         Serial.print(currentDir);
         Serial.print(" | Counter: ");
         Serial.println(counter);
+
+        display.clearDisplay();
+        display.setCursor(0, 10);
+        display.println("y: ");
+        display.println(counter);
+        display.display(); 
       }
 
       // Remember last CLK state
@@ -302,12 +300,6 @@ void findY() {
 }
 
 void findTime() {
-      display.clearDisplay();
-      display.setCursor(0, 10);
-      display.println("Time: ");
-      display.println(counter);
-      display.display(); 
-
       currentStateCLK = digitalRead(CLK);
 
       // If last and current state of CLK are different, then pulse occurred
@@ -329,6 +321,12 @@ void findTime() {
         Serial.print(currentDir);
         Serial.print(" | Counter: ");
         Serial.println(counter);
+
+        display.clearDisplay();
+        display.setCursor(0, 10);
+        display.println("Time: ");
+        display.println(counter);
+        display.display(); 
       }
 
       // Remember last CLK state
