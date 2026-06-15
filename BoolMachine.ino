@@ -26,6 +26,9 @@ int finalEncoder = 0;
 bool setX = false;
 bool setY = false;
 bool setTime = false;
+bool startIntegral = false;
+bool stopIntegral = false;
+float finalVal = 0.0;
 
 enum MachineState {
   X,
@@ -66,10 +69,68 @@ void setup() {
 
 void loop() {
   if (setX == false) {
+    counter = 0;
     findX();
   }
   if (setX == true && setY == false) {
+    counter = 0;
     findY();
+  }
+  if (setX == true && setY == true && setTime == false) {
+    counter = 0;
+    findTime();
+  }
+  if (setX == true && setY == true && setTime == true && startIntegral == false) {
+    counter = 0;
+    int btnState = digitalRead(SW);
+    display.clearDisplay();
+    display.setCursor(50, 25);
+    display.println("Ready to Start");
+    display.display();
+
+    if (btnState == LOW) {
+      if (millis() - lastButtonPress > 50) {
+        Serial.println("Button pressed!");
+        display.clearDisplay();
+        display.setCursor(50, 25);
+        display.println("Starting");
+        display.display();
+        currentState = INTEGRAL;
+        startIntegral = true;
+      }
+      lastButtonPress = millis();
+    }
+  }
+  if (startIntegral == true) {
+    doIntegral();
+  }
+  if (startIntegral == true && stopIntegral == true) {
+    //finalVal = (finalEncoder * enc_per_sec) / b   
+    display.clearDisplay();
+    display.setCursor(50, 25);
+    display.println(finalVal);
+    display.display();
+    int btnState = digitalRead(SW);
+    if (btnState == LOW) {
+      if (millis() - lastButtonPress > 50) {
+        Serial.println("Button pressed!");
+        display.clearDisplay();
+        display.setCursor(50, 25);
+        display.println("Restarting");
+        display.display();
+        x = 0;
+        y = 0;
+        time = 0;
+        finalEncoder = 0;
+        setX = false;
+        setY = false;
+        setTime = false;
+        startIntegral = false;
+        stopIntegral = false;
+        finalVal = 0.0;
+      }
+      lastButtonPress = millis();
+    }
   }
 }
 
@@ -120,6 +181,7 @@ void doIntegral() {
       display.display(); 
       finalEncoder = counter;
       currentState = STOP;
+      stopIntegral = true;
     }
 
     // Remember last button press event
@@ -155,10 +217,6 @@ void findX() {
         Serial.print(currentDir);
         Serial.print(" | Counter: ");
         Serial.println(counter);
-        display.clearDisplay();
-        display.setCursor(50, 25);
-        display.println(counter);
-        display.display();
       }
 
       // Remember last CLK state
@@ -188,7 +246,6 @@ void findX() {
 }
 
 void findY() {
-      counter = 0;
       display.clearDisplay();
       display.setCursor(0, 10);
       display.println("y: ");
@@ -216,10 +273,6 @@ void findY() {
         Serial.print(currentDir);
         Serial.print(" | Counter: ");
         Serial.println(counter);
-        display.clearDisplay();
-        display.setCursor(50, 25);
-        display.println(counter);
-        display.display();
       }
 
       // Remember last CLK state
@@ -252,6 +305,7 @@ void findTime() {
       display.clearDisplay();
       display.setCursor(0, 10);
       display.println("Time: ");
+      display.println(counter);
       display.display(); 
 
       currentStateCLK = digitalRead(CLK);
@@ -275,10 +329,6 @@ void findTime() {
         Serial.print(currentDir);
         Serial.print(" | Counter: ");
         Serial.println(counter);
-        display.clearDisplay();
-        display.setCursor(50, 25);
-        display.println(counter);
-        display.display();
       }
 
       // Remember last CLK state
@@ -299,6 +349,7 @@ void findTime() {
           display.println("Time Set");
           display.display(); 
           currentState = READY;
+          setTime = true;
         }
 
         // Remember last button press event
